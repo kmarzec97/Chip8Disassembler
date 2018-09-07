@@ -1,0 +1,102 @@
+#!/usr/bin/env python3
+import sys
+game = sys.argv[1]
+def dissassembly():
+    try:
+        rom = open(game, 'rb').read()
+    except IOError:
+        print("File not found!")
+        exit()
+    size = 0
+    memory = [0]*0x1000
+    for index, val in enumerate(rom):
+        memory[index] = val
+        size = size + 1
+    index = 0
+    counter = 0
+    while (index + 1) < size:
+        print("%10.5o   " % counter, end='')
+        counter = counter + 1
+        opcode = memory[index + 1]
+        temp = memory[index]
+        temp = temp << 8
+        opcode = opcode | temp
+        if (opcode >> 12) == 0x0:
+            if(opcode & 0x000F) == 0x0:
+                print("NOP")
+            elif(opcode & 0x00F0) == 0xE0:
+                print("Display")
+            elif(opcode & 0x00FF) == 0xEE:
+                print("Return")
+        elif (opcode >> 12 ) == 0x1:
+            print("JMP " + str(opcode & 0x0FFF))
+        elif (opcode >> 12 ) == 0x2:
+            print("CALL " + str(opcode & 0x0FFF))
+        elif (opcode >> 12) == 0x3:
+            print("JE V" + str((opcode & 0x0F00)>>8) + ", " + str(format(opcode & 0x00FF, '02x')).upper())
+        elif (opcode >> 12) == 0x4:
+            print("JNE V" + str((opcode & 0x0F00) >> 8) + ", " + str(format(opcode & 0x00FF, '02x')).upper())
+        elif (opcode >> 12 ) == 0x5:
+            print("JE V" + str((opcode & 0x0F00) >> 8) + ", V" + str((opcode & 0x00F0) >> 4))
+        elif (opcode >> 12) == 0x6:
+            print("MOV V" + str((opcode & 0x0F00) >> 8) + ", #" + str(opcode & 0x00FF))
+        elif (opcode >> 12) == 0x7:
+            print("ADD V" + str((opcode & 0x0F00) >> 8) + ", #" + str(opcode & 0x00FF))
+        elif (opcode >> 12) == 0x8:
+            if (opcode & 0x000F) == 0x0:
+                print("MOV V" + str((opcode & 0x0F00) >> 8) + ", V" + str((opcode & 0x00F0) >> 4))
+            elif (opcode & 0x000F) == 0x1:
+                print("ORL V" + str((opcode & 0x0F00) >> 8) + ", V" + str((opcode & 0x00F0) >> 4))
+            elif (opcode & 0x000F) == 0x2:
+                print("ANL V" + str((opcode & 0x0F00) >> 8) + ", V" + str((opcode & 0x00F0) >> 4))
+            elif (opcode & 0x000F) == 0x3:
+                print("XLR V" + str((opcode & 0x0F00) >> 8) + ", V" + str((opcode & 0x00F0) >> 4))
+            elif (opcode & 0x000F) == 0x4:
+                print("ADD V" + str((opcode & 0x0F00) >> 8) + ", V" + str((opcode & 0x00F0) >> 4))
+            elif (opcode & 0x000F) == 0x5:
+                print("SUB V" + str((opcode & 0x0F00) >> 8) + ", V" + str((opcode & 0x00F0) >> 4))
+            elif (opcode & 0x000F) == 0x6:
+                print("RR V" + str((opcode & 0x0F00) >> 8))
+            elif (opcode & 0x000F) == 0x7:
+                print("SUBO V" + str((opcode & 0x0F00) >> 8) + ", V" + str((opcode & 0x00F0) >> 4))
+            elif (opcode & 0x000F) == 0xE:
+                print("RL V" + str((opcode & 0x0F00) >> 8))
+        elif (opcode >> 12) == 0x9:
+            print("JNE V" + str((opcode & 0x0F00) >> 8) + ", V" + str((opcode & 0x00F0) >> 4))
+        elif (opcode >> 12) == 0xA:
+            print("MOV I, #" + str((opcode & 0x0FFF)))
+        elif (opcode >> 12) == 0xB:
+            print("JMPV0 #" + str(opcode & 0x0FFF))
+        elif (opcode >> 12) == 0xC:
+            print("RND V" + str((opcode & 0x0F00) >> 8) + ", " + str(opcode & 0x00FF))
+        elif (opcode >> 12) == 0xD:
+            print("DRAW V" + str((opcode & 0x0F00) >> 8) + ", V" + str((opcode & 0x00F0) >> 4) + ", #" + str(opcode & 0x000F))
+        elif (opcode >> 12) == 0xE:
+            if (opcode & 0x00FF) == 0x9E:
+                print("JKE V" + str((opcode & 0x0F00) >> 8))
+            elif (opcode & 0x00FF) == 0xA1:
+                print("JKNE V" + str((opcode & 0x0F00) >> 8))
+        elif (opcode >> 12) == 0xF:
+            if (opcode & 0x00FF) == 0x07:
+                print("MOV V" + str((opcode & 0x0F00) >> 8) + ", DELAY")
+            elif (opcode & 0x00FF) == 0x0A:
+                print("MOV V" + str((opcode & 0x0F00) >> 8) + ", KEY")
+            elif (opcode & 0x00FF) == 0x15:
+                print("DELAY V" + str((opcode & 0x0F00) >> 8))
+            elif (opcode & 0x00FF) == 0x18:
+                print("SOUND V" + str((opcode & 0x0F00) >> 8))
+            elif (opcode & 0x00FF) == 0x1E:
+                print("ADD I, V" + str((opcode & 0x0F00) >> 8))
+            elif (opcode & 0x00FF) == 0x29:
+                print("SETSPRITE I, V" + str((opcode & 0x0F00) >> 8))
+            elif (opcode & 0x00FF) == 0x33:
+                print("BCD V" + str((opcode & 0x0F00) >> 8))
+            elif (opcode & 0x00FF) == 0x55:
+                print("REGD V" + str((opcode & 0x0F00) >> 8))
+            elif (opcode & 0x00FF) == 0x65:
+                print("REGL V" + str((opcode & 0x0F00) >> 8))
+        else:
+            print("INSTRUCTION NOT FOUND!")
+        index = index + 2
+
+dissassembly()
