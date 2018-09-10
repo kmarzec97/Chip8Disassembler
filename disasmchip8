@@ -1,6 +1,10 @@
-#!/usr/bin/env python3
 import sys
-game = sys.argv[1]
+try:
+    game = sys.argv[1]
+except IndexError:
+    print("File not found!")
+    exit()
+error = '#### ####'
 def dissassembly():
     try:
         rom = open(game, 'rb').read()
@@ -15,7 +19,7 @@ def dissassembly():
     index = 0
     counter = 0
     while (index + 1) < size:
-        print("%10.5o   " % counter, end='')
+        print("%.5d   " % counter, end='')
         counter = counter + 1
         opcode = memory[index + 1]
         temp = memory[index]
@@ -28,6 +32,8 @@ def dissassembly():
                 print("Display")
             elif(opcode & 0x00FF) == 0xEE:
                 print("Return")
+            else:
+                print(error)
         elif (opcode >> 12 ) == 0x1:
             print("JMP " + str(opcode & 0x0FFF))
         elif (opcode >> 12 ) == 0x2:
@@ -61,6 +67,8 @@ def dissassembly():
                 print("SUBO V" + str((opcode & 0x0F00) >> 8) + ", V" + str((opcode & 0x00F0) >> 4))
             elif (opcode & 0x000F) == 0xE:
                 print("RL V" + str((opcode & 0x0F00) >> 8))
+            else:
+                print(error)
         elif (opcode >> 12) == 0x9:
             print("JNE V" + str((opcode & 0x0F00) >> 8) + ", V" + str((opcode & 0x00F0) >> 4))
         elif (opcode >> 12) == 0xA:
@@ -76,6 +84,8 @@ def dissassembly():
                 print("JKE V" + str((opcode & 0x0F00) >> 8))
             elif (opcode & 0x00FF) == 0xA1:
                 print("JKNE V" + str((opcode & 0x0F00) >> 8))
+            else:
+                print(error)
         elif (opcode >> 12) == 0xF:
             if (opcode & 0x00FF) == 0x07:
                 print("MOV V" + str((opcode & 0x0F00) >> 8) + ", DELAY")
@@ -95,8 +105,10 @@ def dissassembly():
                 print("REGD V" + str((opcode & 0x0F00) >> 8))
             elif (opcode & 0x00FF) == 0x65:
                 print("REGL V" + str((opcode & 0x0F00) >> 8))
+            else:
+                print(error)
         else:
-            print("INSTRUCTION NOT FOUND!")
+            print(error)
         index = index + 2
 
 dissassembly()
